@@ -7,7 +7,6 @@ from django.utils import timezone
 class Album(models.Model):
 	album_name = models.CharField(max_length=200)
 	pub_date = models.DateTimeField('Date published')
-#	os.mkdir(os.path.join('/gallery/media/images', models.ForeignKey(Album)))
 
 	def __unicode__(self):
 		return self.album_name
@@ -19,14 +18,22 @@ class Album(models.Model):
 	was_published_recently.boolean = True
 	was_published_recently.short_description = 'Published recently?'
 
+def file_path(instance, filename):
+	return '/'.join(['gallery', str(instance.album.id), filename])
+
 class Picture(models.Model):
 	album = models.ForeignKey(Album)
-	pic_name = models.CharField(max_length=200)
+	name = models.CharField(max_length=200)
 	pub_date = models.DateTimeField('Date published')
-#	pic_loc = models.FileField(upload_to='/media/images/'+str(album))
+#	path = 
+	imgfile = models.ImageField(upload_to=file_path)
 
 	def __unicode__(self):
-		return self.pic_name
+		return self.name
+
+	def delete(self, *args, **kwargs):
+		self.imgfile.delete(False)
+		super(Picture, self).delete(*args, **kwargs)
 
 	def was_published_recently(self):
 		now = timezone.now()
@@ -34,3 +41,4 @@ class Picture(models.Model):
 	was_published_recently.admin_order_field = 'pub_date'
 	was_published_recently.boolean = True
 	was_published_recently.short_description = 'Published recently?'
+
